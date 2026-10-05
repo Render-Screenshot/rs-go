@@ -290,14 +290,22 @@ func TestClientGetBatch(t *testing.T) {
 			"failed":    0.0,
 			"results": []interface{}{
 				map[string]interface{}{
-					"url":       "https://site1.com",
-					"status":    "completed",
-					"image_url": "https://cdn.example.com/1.png",
+					"position": 0.0,
+					"url":      "https://site1.com",
+					"status":   "completed",
+					"image": map[string]interface{}{
+						"image_url": "https://cdn.example.com/1.png",
+						"width":     1200.0,
+						"height":    630.0,
+					},
+					"error": nil,
 				},
 				map[string]interface{}{
-					"url":       "https://site2.com",
-					"status":    "completed",
-					"image_url": "https://cdn.example.com/2.png",
+					"position": 1.0,
+					"url":      "https://site2.com",
+					"status":   "failed",
+					"image":    nil,
+					"error":    "Page failed to load",
 				},
 			},
 		})
@@ -315,8 +323,23 @@ func TestClientGetBatch(t *testing.T) {
 	if len(resp.Results) != 2 {
 		t.Errorf("expected 2 results, got %d", len(resp.Results))
 	}
+	if resp.Results[0].Image == nil || resp.Results[0].Image.ImageURL != "https://cdn.example.com/1.png" {
+		t.Errorf("Results[0].Image = %+v", resp.Results[0].Image)
+	}
 	if resp.Results[0].ImageURL != "https://cdn.example.com/1.png" {
 		t.Errorf("Results[0].ImageURL = %q", resp.Results[0].ImageURL)
+	}
+	if resp.Results[0].Image.Width != 1200 {
+		t.Errorf("Results[0].Image.Width = %d, want 1200", resp.Results[0].Image.Width)
+	}
+	if resp.Results[1].Status != "failed" || resp.Results[1].Image != nil {
+		t.Errorf("Results[1] = %+v, want failed with no image", resp.Results[1])
+	}
+	if resp.Results[1].Error != "Page failed to load" {
+		t.Errorf("Results[1].Error = %q", resp.Results[1].Error)
+	}
+	if resp.Results[1].Position != 1 {
+		t.Errorf("Results[1].Position = %d, want 1", resp.Results[1].Position)
 	}
 }
 

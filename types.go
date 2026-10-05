@@ -98,16 +98,30 @@ type BatchResponse struct {
 	Total     int            `json:"total"`
 	Completed int            `json:"completed"`
 	Failed    int            `json:"failed"`
+	Progress  float64        `json:"progress,omitempty"`
 	Results   []BatchResult  `json:"results"`
 	Error     *ErrorResponse `json:"error,omitempty"`
 }
 
 // BatchResult represents a single result in a batch response.
+// Image is set when Status is "completed"; Error holds the message when Status is "failed".
 type BatchResult struct {
-	URL      string `json:"url"`
-	Status   string `json:"status"`
+	Position int         `json:"position"`
+	URL      string      `json:"url"`
+	Status   string      `json:"status"`
+	Image    *BatchImage `json:"image,omitempty"`
+	Error    string      `json:"error,omitempty"`
+	// ImageURL is a shortcut for Image.ImageURL (empty when the item did not complete).
+	ImageURL string `json:"-"`
+}
+
+// BatchImage holds the screenshot details for a completed batch item.
+type BatchImage struct {
 	ImageURL string `json:"image_url"`
-	Error    string `json:"error,omitempty"`
+	Width    int    `json:"width"`
+	Height   int    `json:"height"`
+	Size     int    `json:"size"`
+	Format   string `json:"format"`
 }
 
 // BatchRequest represents a single request in an advanced batch.

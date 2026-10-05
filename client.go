@@ -322,6 +322,9 @@ func parseBatchResponse(m map[string]interface{}) *BatchResponse {
 	if v, ok := m["failed"].(float64); ok {
 		r.Failed = int(v)
 	}
+	if v, ok := m["progress"].(float64); ok {
+		r.Progress = v
+	}
 	if results, ok := m["results"].([]interface{}); ok {
 		for _, item := range results {
 			entry, ok := item.(map[string]interface{})
@@ -329,14 +332,18 @@ func parseBatchResponse(m map[string]interface{}) *BatchResponse {
 				continue
 			}
 			br := BatchResult{}
+			if v, ok := entry["position"].(float64); ok {
+				br.Position = int(v)
+			}
 			if v, ok := entry["url"].(string); ok {
 				br.URL = v
 			}
 			if v, ok := entry["status"].(string); ok {
 				br.Status = v
 			}
-			if v, ok := entry["image_url"].(string); ok {
-				br.ImageURL = v
+			if img, ok := entry["image"].(map[string]interface{}); ok {
+				br.Image = parseBatchImage(img)
+				br.ImageURL = br.Image.ImageURL
 			}
 			if v, ok := entry["error"].(string); ok {
 				br.Error = v
@@ -345,6 +352,26 @@ func parseBatchResponse(m map[string]interface{}) *BatchResponse {
 		}
 	}
 	return r
+}
+
+func parseBatchImage(m map[string]interface{}) *BatchImage {
+	img := &BatchImage{}
+	if v, ok := m["image_url"].(string); ok {
+		img.ImageURL = v
+	}
+	if v, ok := m["width"].(float64); ok {
+		img.Width = int(v)
+	}
+	if v, ok := m["height"].(float64); ok {
+		img.Height = int(v)
+	}
+	if v, ok := m["size"].(float64); ok {
+		img.Size = int(v)
+	}
+	if v, ok := m["format"].(string); ok {
+		img.Format = v
+	}
+	return img
 }
 
 func parsePresets(arr []interface{}) []PresetInfo {
